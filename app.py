@@ -1,41 +1,35 @@
-import subprocess, sys
-subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "setuptools"])
 import streamlit as st
 import cv2
 import numpy as np
-from fer import FER
-from transformers import pipeline
-import torch
+from deepface import DeepFace
 
-st.title("👤 Human Detection + Emotion AI Friend")
+st.title("Human Detection AI Friend (Webcam Mode)")
 
-# Auto-detect GPU if available
-device = 0 if torch.cuda.is_available() else -1
+# Start webcam
+run = st.checkbox("Start Webcam")
 
-# Load models
-emotion_detector = FER(mtcnn=True)
-chat_model = pipeline("text-generation", model="distilgpt2", device=device)
+FRAME_WINDOW = st.image([])
 
-# Chat loop
-user_text = st.text_input("💬 Say something to your AI friend:")
+camera = cv2.VideoCapture(0)
 
-if user_text:
-    # Capture snapshot each time user talks
-    camera_image = st.camera_input("📸 Take a picture while replying")
+while run:
+    ret, frame = camera.read()
+    if not ret:
+        st.error("Failed to access webcam")
+        break
 
-    if camera_image:
-        # Convert image
-        file_bytes = np.asarray(bytearray(camera_image.getbuffer()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
+    # Convert to RGB for display
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # Detect emotion
-        emotions = emotion_detector.detect_emotions(img)
-        dominant_emotion = "neutral"
-        if emotions:
-            dominant_emotion = max(emotions[0]["emotions"], key=emotions[0]["emotions"].get)
+    # Show webcam feed
+    FRAME_WINDOW.image(rgb_frame)
 
-        # Generate AI reply
-        prompt = f"The person looks {dominant_emotion} and says: '{user_text}'. Respond kindly."
-        reply = chat_model(prompt, max_length=80, do_sample=True)[0]['generated_text']
+    try:
+        # Analyze emotions in the current frame
+        result = DeepFace.analyze(rgb_frame, actions=['emotion'], enforce_detection=False)
+        st.write("Dominant emotion:", result[0]['dominant_emotion'])
+    except Exception as e:
+        st.write("No face detected or error:", e)
 
-        st.write("🤖 Friend says:", reply)
+camera.release()
+
