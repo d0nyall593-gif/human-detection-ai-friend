@@ -1,8 +1,8 @@
 streamlit
-opencv-python-headless==5.0.0.93
-numpy==2.5.2
-fer==25.10.1
-transformers==5.15.0
-torch==2.13.0
-pyngrok==8.1.2
-setuptools>=77.0.3
+opencv-python-headless
+numpy
+fer
+transformers
+torch
+pyngrok
+setuptools
