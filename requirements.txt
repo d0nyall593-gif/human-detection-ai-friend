@@ -5,4 +5,4 @@ fer==25.10.1
 transformers==5.15.0
 torch==2.13.0
 pyngrok==8.1.2
-setuptools==70.0.0
+setuptools>=77.0.3
