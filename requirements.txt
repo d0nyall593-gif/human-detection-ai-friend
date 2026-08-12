@@ -5,4 +5,4 @@ fer
 transformers
 torch
 pyngrok
-setuptools
+setuptools>=77.0.3
