@@ -1,3 +1,5 @@
+import subprocess, sys
+subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "setuptools"])
 import streamlit as st
 import cv2
 import numpy as np
