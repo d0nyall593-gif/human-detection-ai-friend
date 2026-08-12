@@ -1,34 +1,26 @@
 import streamlit as st
-from deepface import DeepFace
-from PIL import Image
 import numpy as np
+from PIL import Image
+from fer import FER
 
 st.title("📸 Human Emotion Detector (Image Upload)")
-st.write("Upload an image and let AI detect age, gender, race, and emotion.")
+st.write("Upload an image and let AI detect emotions.")
 
-# Upload image
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg","jpeg","png"])
 
 if uploaded_file is not None:
-    # Open image
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Image", use_column_width=True)
-
-    # Convert to numpy array
     img_array = np.array(image)
 
-    # Analyze with DeepFace
     if st.button("Analyze"):
-        result = DeepFace.analyze(
-            img_path=img_array,
-            actions=['age', 'gender', 'race', 'emotion'],
-            enforce_detection=False,
-            detector_backend="opencv",
-            silent=True
-        )
+        detector = FER(mtcnn=True)  # uses MTCNN face detector, no cv2 import
+        result = detector.detect_emotions(img_array)
 
-        st.subheader("Results:")
-        st.write(f"Age: {result[0]['age']}")
-        st.write(f"Gender: {result[0]['dominant_gender']}")
-        st.write(f"Race: {result[0]['dominant_race']}")
-        st.write(f"Emotion: {result[0]['dominant_emotion']}")
+        if result:
+            emotions = result[0]["emotions"]
+            st.subheader("Results:")
+            for emotion, score in emotions.items():
+                st.write(f"{emotion}: {score:.2f}")
+        else:
+            st.warning("No face detected.")
